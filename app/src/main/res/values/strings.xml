@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Bus Tracker</string>
+    <string name="add_name">Enter your name!</string>
+    <string name="add_time">What time is your first class on Monday?</string>
+    <string name="add_class">Where is your first class on Monday</string>
+    <string name="add_bus">What bus do you usually take to get to class?</string>
+    <string name="add_stop">What is your preferred bus stop?</string>
 </resources>
