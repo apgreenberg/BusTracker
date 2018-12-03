@@ -5,4 +5,9 @@
     <string name="add_class">Where is your first class on Monday</string>
     <string name="add_bus">What bus do you usually take to get to class?</string>
     <string name="add_stop">What is your preferred bus stop?</string>
+    <string name="list_header">Hi NameVar, BusVar Upcoming at StopVar</string>
+    <string name="bus_info1">Time1</string>
+    <string name="bus_info2">Time2</string>
+    <string name="bus_info3">Time3</string>
+    <string name="bus_info4">Time4</string>
 </resources>

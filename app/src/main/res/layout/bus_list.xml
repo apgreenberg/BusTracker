@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/textViewBus"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:text= ""
+        android:background="@android:color/holo_blue_dark"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:textSize="30sp" />
+
+    <TextView
+        android:id="@+id/textViewOne"
+        android:layout_width="match_parent"
+        android:layout_height="101dp"
+        android:background="@android:color/holo_orange_dark"
+        android:text="@string/bus_info1"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:textSize="60sp" />
+
+    <TextView
+        android:id="@+id/textViewTwo"
+        android:layout_width="match_parent"
+        android:layout_height="101dp"
+        android:background="@android:color/holo_blue_dark"
+        android:text="@string/bus_info2"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:textSize="60sp" />
+    <TextView
+        android:id="@+id/textViewThree"
+        android:layout_width="match_parent"
+        android:layout_height="101dp"
+        android:background="@android:color/holo_orange_dark"
+        android:text="@string/bus_info3"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:textSize="60sp" />
+
+    <TextView
+        android:id="@+id/textViewFour"
+        android:layout_width="match_parent"
+        android:layout_height="101dp"
+        android:background="@android:color/holo_blue_dark"
+        android:text="@string/bus_info4"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:textSize="60sp" />
+</LinearLayout>

@@ -23,17 +23,9 @@ import android.widget.TextView;
 /**
  * Main class for our UI design lab.
  */
-public final class MainActivity extends AppCompatActivity {
+public final class BusList extends AppCompatActivity {
     /** Default logging tag for messages from the main activity. */
     private static final String TAG = "Lab11:Main";
-    private String timeOfClass;
-    private String locationOfClass;
-    private String busNumber;
-    public String name;
-    public String time;
-    public String location;
-    public String bus;
-    public String stop;
 
     /** Request queue for our API requests. */
     private static RequestQueue requestQueue;
@@ -49,30 +41,19 @@ public final class MainActivity extends AppCompatActivity {
 
         // Set up the queue for our API requests
         requestQueue = Volley.newRequestQueue(this);
-
-        setContentView(R.layout.activity_main);
-
+        setContentView(R.layout.bus_list);
         startAPICall("192.17.96.8");
+        String name = getIntent().getStringExtra("name");
+        String time = getIntent().getStringExtra("time");
+        String location = getIntent().getStringExtra("location");
+        String bus = getIntent().getStringExtra("bus");
+        String stop = getIntent().getStringExtra("stop");
+        TextView textViewBus;
+        textViewBus  = (TextView)findViewById(R.id.textViewBus);
+        String displayText = "hi, " + name + ". " + bus + " is arriving at " + stop + ".";
+        textViewBus.setText(displayText);
     }
-    public void switchScreens(View v){
-        EditText timeId = findViewById(R.id.time_input);
-        EditText locId = findViewById(R.id.loc_input);
-        EditText busId = findViewById(R.id.bus_input);
-        EditText stopId = findViewById(R.id.stop_input);
-        EditText nameId = findViewById(R.id.name_input);
-        name = nameId.getText().toString();
-        time = timeId.getText().toString();
-        location = locId.getText().toString();
-        bus = busId.getText().toString();
-        stop = stopId.getText().toString();
-        Intent intent = new Intent(MainActivity.this, BusList.class);
-        intent.putExtra("time", time);
-        intent.putExtra("location", location);
-        intent.putExtra("bus", bus);
-        intent.putExtra("stop", stop);
-        intent.putExtra("name", name);
-        startActivity(intent);
-    }
+
     /**
      * what to so onclick.
      */
@@ -106,11 +87,11 @@ public final class MainActivity extends AppCompatActivity {
                             apiCallDone(response);
                         }
                     }, new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(final VolleyError error) {
-                            Log.e(TAG, error.toString());
-                        }
-                    });
+                @Override
+                public void onErrorResponse(final VolleyError error) {
+                    Log.e(TAG, error.toString());
+                }
+            });
             jsonObjectRequest.setShouldCache(false);
             requestQueue.add(jsonObjectRequest);
         } catch (Exception e) {
@@ -131,3 +112,5 @@ public final class MainActivity extends AppCompatActivity {
         } catch (JSONException ignored) { }
     }
 }
+
+
