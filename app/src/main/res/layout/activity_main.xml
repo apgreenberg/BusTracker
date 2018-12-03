@@ -12,53 +12,55 @@
         android:id="@+id/name_input"
         style="@style/Widget.AppCompat.EditText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="77dp"
         android:ems="10"
+        android:hint="@string/add_name"
         android:inputType="textPersonName"
-        android:text=""
-        android:hint="@string/add_name"/>
+        android:text="" />
 
     <EditText
         android:id="@+id/time_input"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
         android:ems="10"
+        android:hint="@string/add_time"
         android:inputType="time"
-        android:text=""
-        android:hint="@string/add_time"/>
+        android:text="" />
 
     <EditText
         android:id="@+id/loc_input"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="68dp"
         android:ems="10"
+        android:hint="@string/add_class"
         android:inputType="textPostalAddress"
-        android:text=""
-        android:hint="@string/add_class"/>
+        android:text="" />
+
     <EditText
         android:id="@+id/bus_input"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
         android:ems="10"
+        android:hint="@string/add_bus"
         android:inputType="textPostalAddress"
-        android:text=""
-        android:hint="@string/add_bus"/>
+        android:text="" />
+
     <EditText
         android:id="@+id/stop_input"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="68dp"
         android:ems="10"
+        android:hint="@string/add_stop"
         android:inputType="textPostalAddress"
-        android:text=""
-        android:hint="@string/add_stop"/>
+        android:text="" />
 
     <Button
         android:id="@+id/get_info"
         style="@android:style/Widget.Holo.Button.Toggle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Submit Info"
-        android:onClick="switchScreens"/>
+        android:onClick="switchScreens"
+        android:text="Search for Upcoming Times" />
 
 
 </LinearLayout>

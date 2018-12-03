@@ -50,7 +50,7 @@ public final class BusList extends AppCompatActivity {
         String stop = getIntent().getStringExtra("stop");
         TextView textViewBus;
         textViewBus  = (TextView)findViewById(R.id.textViewBus);
-        String displayText = "hi, " + name + ". " + bus + " is arriving at " + stop + ".";
+        String displayText = "Hi, " + name + ". " + bus + " will be arriving at " + stop + " at:";
         textViewBus.setText(displayText);
     }
 
