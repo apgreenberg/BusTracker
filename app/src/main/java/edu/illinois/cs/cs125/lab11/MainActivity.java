@@ -53,6 +53,7 @@ public final class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         startAPICall("192.17.96.8");
+       // https://developer.cumtd.com/api/v2.2/json/getstoptimesbystop?key=a007306f70264930870da537901333e3&stop_id=it:1
     }
     public void switchScreens(View v){
         EditText timeId = findViewById(R.id.time_input);
