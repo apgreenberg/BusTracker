@@ -190,7 +190,17 @@ public final class BusList extends AppCompatActivity {
                                                                 endTimes[i] = Integer.toString(time) + endTimes[i].substring(2, 5);
                                                             }
                                                         }
-
+                                                        if (stopTimes[0] == null && endTimes[0] == null) {
+                                                            stopTimes[0] = "Sorry, no buses available";
+                                                        }
+                                                        for (int i = 1; i < 4; i++) {
+                                                            if (stopTimes[i] == null) {
+                                                                stopTimes[i] = "";
+                                                            }
+                                                            if (endTimes[i] == null) {
+                                                                endTimes[i] = "";
+                                                            }
+                                                        }
                                                         TextView textViewOne;
                                                         textViewOne = findViewById(R.id.textViewOne);
                                                         String displayTimeOne = stopTimes[0] + " " + endTimes[0];
