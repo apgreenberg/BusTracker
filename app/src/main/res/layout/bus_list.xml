@@ -25,11 +25,12 @@
 
     <TextView
         android:id="@+id/textViewOne"
-        android:layout_width="match_parent"
+        android:layout_width="384dp"
         android:layout_height="91dp"
         android:background="@android:color/holo_orange_dark"
         android:drawableTop="@android:color/black"
         android:drawableBottom="@android:color/black"
+        android:gravity="left"
         android:text="@string/bus_info1"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
         android:textSize="60sp" />
@@ -43,7 +44,7 @@
 
     <TextView
         android:id="@+id/textViewTwo"
-        android:layout_width="match_parent"
+        android:layout_width="384dp"
         android:layout_height="92dp"
         android:background="@android:color/holo_blue_dark"
         android:text=""
@@ -59,7 +60,7 @@
 
     <TextView
         android:id="@+id/textViewThree"
-        android:layout_width="match_parent"
+        android:layout_width="384dp"
         android:layout_height="93dp"
         android:background="@android:color/holo_orange_dark"
         android:text=""
@@ -75,7 +76,7 @@
 
     <TextView
         android:id="@+id/textViewFour"
-        android:layout_width="match_parent"
+        android:layout_width="384dp"
         android:layout_height="91dp"
         android:background="@android:color/holo_blue_dark"
         android:text=""
@@ -88,4 +89,5 @@
         android:layout_height="8dp"
         android:background="@android:color/black"
         android:text="TextView" />
+
 </LinearLayout>

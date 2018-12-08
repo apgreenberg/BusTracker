@@ -50,6 +50,7 @@ public final class BusList extends AppCompatActivity {
 
     /** Array of upcoming bus arival times. */
     private String[] stopTimes = new String[20];
+    private String[] endTimes = new String[20];
 
     /** Array of strings consisting of upcoming times that input bus and stop have returned. */
     /** what the API returns */
@@ -74,6 +75,7 @@ public final class BusList extends AppCompatActivity {
         //Storage variables for correct ids
         String routeId = "";
         String stopId = "";
+        String endId = "";
         //Determines the correct bus route id from the user input
         for (int i = 0; i < routeIds.length; i++) {
             if (bus.replaceAll("\\s+", "").toUpperCase().equals(routeIds[i][0])) {
@@ -84,6 +86,9 @@ public final class BusList extends AppCompatActivity {
             if (stop.replaceAll("\\s+", "").toUpperCase().equals(stopIds[i][0])) {
                 stopId = stopIds[i][1];
             }
+            if (location.replaceAll("\\s+", "").toUpperCase().equals(stopIds[i][0])) {
+                endId = stopIds[i][1];
+            }
         }
         //Transfers user input to display personalized greeting
         TextView textViewBus;
@@ -92,7 +97,7 @@ public final class BusList extends AppCompatActivity {
         textViewBus.setText(displayGreeting);
 
         //starts api call
-        startAPICall(stopId, routeId);
+        startAPICall(stopId, routeId, endId);
 
         //transfers four upcoming times to their respective displays on the layout
 
@@ -116,7 +121,7 @@ public final class BusList extends AppCompatActivity {
      * @param stopId id for the input stop.
      * @param routeId is for the input route.
      */
-    void startAPICall(final String stopId, final String routeId) {
+    void startAPICall(final String stopId, final String routeId, final String endId) {
         try {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                     Request.Method.GET,
@@ -151,25 +156,83 @@ public final class BusList extends AppCompatActivity {
                                     }
                                 }
 
-                                TextView textViewOne;
-                                textViewOne = findViewById(R.id.textViewOne);
-                                String displayTimeOne = stopTimes[0];
-                                textViewOne.setText(displayTimeOne);
+                                try {
+                                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                                            Request.Method.GET,
+                                            "https://developer.cumtd.com/api/v2.2/json/getdeparturesbystop?key=" + apiKey + "&stop_id=" + endId + "&route_id=" + routeId,
+                                            null,
+                                            new Response.Listener<JSONObject>() {
+                                                @Override
+                                                public void onResponse(final JSONObject response) {
+                                                    try {
+                                                        apiCallDone(response);
+                                                        String newResponse = response.getString("departures");
+                                                        //responseAPI.replaceAll("\"", "");
+                                                        String[] splitTwo = newResponse.split("expected");
+                                                        System.out.println(newResponse);
+                                                        count = 0;
+                                                        for (int i = 1; i < splitTwo.length; i += 2) {
+                                                            endTimes[count] = splitTwo[i].substring(14, 19);
+                                                            count++;
+                                                        }
+                                                        for (int i = 0; i < endTimes.length; i++) {
+                                                            System.out.println(endTimes[i]);
+                                                        }
+                                                        for (int i = 0; i < 4; i++) {
+                                                            if (endTimes[i] != null) {
+                                                                int time = Integer.parseInt(endTimes[i].substring(0, 2));
+                                                                if (time > 12) {
+                                                                    time = time - 12;
+                                                                }
+                                                                if (time == 0) {
+                                                                    time = 12;
+                                                                }
+                                                                endTimes[i] = Integer.toString(time) + endTimes[i].substring(2, 5);
+                                                            }
+                                                        }
 
-                                TextView textViewTwo;
-                                textViewTwo = findViewById(R.id.textViewTwo);
-                                String displayTimeTwo = stopTimes[1];
-                                textViewTwo.setText(displayTimeTwo);
+                                                        TextView textViewOne;
+                                                        textViewOne = findViewById(R.id.textViewOne);
+                                                        String displayTimeOne = stopTimes[0] + " " + endTimes[0];
+                                                        textViewOne.setText(displayTimeOne);
 
-                                TextView textViewThree;
-                                textViewThree = findViewById(R.id.textViewThree);
-                                String displayTimeThree = stopTimes[2];
-                                textViewThree.setText(displayTimeThree);
+                                                        TextView textViewTwo;
+                                                        textViewTwo = findViewById(R.id.textViewTwo);
+                                                        String displayTimeTwo = stopTimes[1] + " " + endTimes[1];
+                                                        textViewTwo.setText(displayTimeTwo);
 
-                                TextView textViewFour;
-                                textViewFour = findViewById(R.id.textViewFour);
-                                String displayTimeFour = stopTimes[3];
-                                textViewFour.setText(displayTimeFour);
+                                                        TextView textViewThree;
+                                                        textViewThree = findViewById(R.id.textViewThree);
+                                                        String displayTimeThree = stopTimes[2] + " " + endTimes[2];
+                                                        textViewThree.setText(displayTimeThree);
+
+                                                        TextView textViewFour;
+                                                        textViewFour = findViewById(R.id.textViewFour);
+                                                        String displayTimeFour = stopTimes[3] + " " + endTimes[3];
+                                                        textViewFour.setText(displayTimeFour);
+
+                                                        //for (int i = 0; i < split.length; i++) {
+                                                        //   System.out.println(split[i]);
+                                                        //}
+                                                    } catch(JSONException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    // JSONObject jsonObject = response;
+                                                    // JSONArray jsonArray = jsonObject.get("stop_times");
+                                                    //System.out.println(responseAPI);
+                                                }
+                                            }, new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(final VolleyError error) {
+                                            Log.e(TAG, error.toString());
+                                        }
+                                    });
+                                    jsonObjectRequest.setShouldCache(false);
+                                    requestQueue.add(jsonObjectRequest);
+                                    responseAPI = jsonObjectRequest.toString();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
 
                                 //for (int i = 0; i < split.length; i++) {
                                  //   System.out.println(split[i]);
@@ -193,6 +256,8 @@ public final class BusList extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
     }
 
     /**
