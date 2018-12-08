@@ -13,6 +13,8 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONArray;
+//import org.json.simple.parser.*;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -30,18 +32,24 @@ public final class BusList extends AppCompatActivity {
 
     /** Request queue for our API requests. */
     private static RequestQueue requestQueue;
+    private int count = 0;
 
     /** Api Key value holder. */
     private static final String apiKey = "a007306f70264930870da537901333e3";
 
     /** Array of strings containing all supported bus routes. */
     private static final String[][] routeIds = {{"22S", "ILLINI"}, {"22N", "ILLINI"}, {"12WTEAL", "TEAL"}
-        , {"12ETEAL", "TEAL"}, {"220N", "ILLINI EVENING"}, {"220S", "ILLINI EVENING"}};
+        , {"12ETEAL", "TEAL"}, {"220N", "ILLINI EVENING"}, {"220S", "ILLINI EVENING"}
+, {"13N", "SILVER"}, {"13S", "SILVER"}};
 
     /** Array of strings containing all supported bus stops. */
     //par is not working properly
     private static final String[][] stopIds = {{"ISRN", "ISR:2"}, {"ISRS", "ISR:1"}, {"KRANNERTCENTER", "KRANNERT"}
-    , {"CHEMICALANDLIFESCIENCES", "CHEMLS"}, {"LARN", "LAR:2"}, {"LARS", "LAR:1"}, {"PAR", "PAPAR:2"}};
+    , {"CHEMICALANDLIFESCIENCES", "CHEMLS"}, {"LARN", "LAR:2"}, {"LARS", "LAR:1"}
+    , {"PAR", "PAPAR:2"}, {"GREGORYANDDORNERN", "GRGDNR:2"}, {"GREGORYANDDORNERS", "GRGDNR:3"}};
+
+    /** Array of upcoming bus arival times. */
+    private String[] stopTimes = new String[20];
 
     /** Array of strings consisting of upcoming times that input bus and stop have returned. */
     /** what the API returns */
@@ -86,37 +94,13 @@ public final class BusList extends AppCompatActivity {
         //starts api call
         startAPICall(stopId, routeId);
 
-        // helper function to break down the API response
-        getTimes(responseAPI);
         //transfers four upcoming times to their respective displays on the layout
-        TextView textViewOne;
-        textViewOne = findViewById(R.id.textViewOne);
-        String displayTimeOne = "";
-        //textViewOne.setText(displayTimeOne);
 
-        TextView textViewTwo;
-        textViewOne = findViewById(R.id.textViewTwo);
-        String displayTimeTwo = "";
-        //textViewOne.setText(displayTimeTwo);
-
-        TextView textViewThree;
-        textViewOne = findViewById(R.id.textViewThree);
-        String displayTimeThree = "";
-        //textViewOne.setText(displayTimeThree);
-
-        TextView textViewFour;
-        textViewOne = findViewById(R.id.textViewFour);
-        String displayTimeFour = "";
-        //textViewOne.setText(displayTimeFour);
-    }
-    private void getTimes(String input) {
-        String responseTrimmed = responseAPI.replaceAll("\"", "");
-        System.out.println("this is where getTimes is called and this is response from api call variable once trimmed up: " + responseTrimmed);
-        String[] temp = input.split("arrival_time");
-        for (int i = 0; i < temp.length; i++) {
-            System.out.println("temp has a length of: " + temp.length);
-            System.out.println("iterating through temp: " + temp[i]);
+        for (int i = 0; i < stopTimes.length; i++) {
+            System.out.println(stopTimes[i]);
         }
+
+
     }
     /**
      * Run when this activity is no longer visible.
@@ -136,14 +120,66 @@ public final class BusList extends AppCompatActivity {
         try {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                     Request.Method.GET,
-                    "https://developer.cumtd.com/api/v2.2/json/getstoptimesbystop?key=" + apiKey + "&stop_id=" + stopId + "&route_id=" + routeId,
+                    "https://developer.cumtd.com/api/v2.2/json/getdeparturesbystop?key=" + apiKey + "&stop_id=" + stopId + "&route_id=" + routeId,
                     null,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(final JSONObject response) {
-                            apiCallDone(response);
-                            responseAPI = response.toString();
-                            System.out.println(responseAPI);
+                            try {
+                                apiCallDone(response);
+                                responseAPI = response.getString("departures");
+                                //responseAPI.replaceAll("\"", "");
+                                String[] split = responseAPI.split("expected");
+                                System.out.println(responseAPI);
+                                for (int i = 1; i < split.length; i += 2) {
+                                    stopTimes[count] = split[i].substring(14, 19);
+                                    count++;
+                                }
+                                for (int i = 0; i < stopTimes.length; i++) {
+                                    System.out.println(stopTimes[i]);
+                                }
+                                for (int i = 0; i < 4; i++) {
+                                    if (stopTimes[i] != null) {
+                                        int time = Integer.parseInt(stopTimes[i].substring(0, 2));
+                                        if (time > 12) {
+                                            time = time - 12;
+                                        }
+                                        if (time == 0) {
+                                            time = 12;
+                                        }
+                                        stopTimes[i] = Integer.toString(time) + stopTimes[i].substring(2, 5);
+                                    }
+                                }
+
+                                TextView textViewOne;
+                                textViewOne = findViewById(R.id.textViewOne);
+                                String displayTimeOne = stopTimes[0];
+                                textViewOne.setText(displayTimeOne);
+
+                                TextView textViewTwo;
+                                textViewTwo = findViewById(R.id.textViewTwo);
+                                String displayTimeTwo = stopTimes[1];
+                                textViewTwo.setText(displayTimeTwo);
+
+                                TextView textViewThree;
+                                textViewThree = findViewById(R.id.textViewThree);
+                                String displayTimeThree = stopTimes[2];
+                                textViewThree.setText(displayTimeThree);
+
+                                TextView textViewFour;
+                                textViewFour = findViewById(R.id.textViewFour);
+                                String displayTimeFour = stopTimes[3];
+                                textViewFour.setText(displayTimeFour);
+
+                                //for (int i = 0; i < split.length; i++) {
+                                 //   System.out.println(split[i]);
+                                //}
+                            } catch(JSONException e) {
+                                e.printStackTrace();
+                            }
+                           // JSONObject jsonObject = response;
+                           // JSONArray jsonArray = jsonObject.get("stop_times");
+                            //System.out.println(responseAPI);
                         }
                     }, new Response.ErrorListener() {
                 @Override
