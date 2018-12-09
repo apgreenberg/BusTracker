@@ -12,12 +12,13 @@
         android:id="@+id/textViewBus"
         android:layout_width="match_parent"
         android:layout_height="95dp"
+        android:gravity="center_vertical"
         android:text=""
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-        android:textSize="30sp" />
+        android:textSize="25sp" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/blackOne"
         android:layout_width="match_parent"
         android:layout_height="9dp"
         android:background="@android:color/black"
@@ -25,18 +26,18 @@
 
     <TextView
         android:id="@+id/textViewOne"
-        android:layout_width="384dp"
+        android:layout_width="415dp"
         android:layout_height="91dp"
         android:background="@android:color/holo_orange_dark"
         android:drawableTop="@android:color/black"
         android:drawableBottom="@android:color/black"
         android:gravity="left"
-        android:text="@string/bus_info1"
+        android:text=""
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
         android:textSize="60sp" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/blackTwo"
         android:layout_width="match_parent"
         android:layout_height="8dp"
         android:background="@android:color/black"
@@ -44,7 +45,7 @@
 
     <TextView
         android:id="@+id/textViewTwo"
-        android:layout_width="384dp"
+        android:layout_width="415dp"
         android:layout_height="92dp"
         android:background="@android:color/holo_blue_dark"
         android:text=""
@@ -52,7 +53,7 @@
         android:textSize="60sp" />
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/BlackThree"
         android:layout_width="match_parent"
         android:layout_height="8dp"
         android:background="@android:color/black"
@@ -60,7 +61,7 @@
 
     <TextView
         android:id="@+id/textViewThree"
-        android:layout_width="384dp"
+        android:layout_width="415dp"
         android:layout_height="93dp"
         android:background="@android:color/holo_orange_dark"
         android:text=""
@@ -68,7 +69,7 @@
         android:textSize="60sp" />
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/blackFour"
         android:layout_width="match_parent"
         android:layout_height="9dp"
         android:background="@android:color/black"
@@ -76,7 +77,7 @@
 
     <TextView
         android:id="@+id/textViewFour"
-        android:layout_width="384dp"
+        android:layout_width="415dp"
         android:layout_height="91dp"
         android:background="@android:color/holo_blue_dark"
         android:text=""

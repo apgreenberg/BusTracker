@@ -32,29 +32,51 @@ public final class BusList extends AppCompatActivity {
 
     /** Request queue for our API requests. */
     private static RequestQueue requestQueue;
-    private int count = 0;
 
+    /** General count variable. */
+    public int count = 0;
+
+    /** Specific count variable to count how many times the start api function is called. */
+    public int countApi = 0;
     /** Api Key value holder. */
     private static final String apiKey = "a007306f70264930870da537901333e3";
 
-    /** Array of strings containing all supported bus routes. */
-    private static final String[][] routeIds = {{"22S", "ILLINI"}, {"22N", "ILLINI"}, {"12WTEAL", "TEAL"}
-        , {"12ETEAL", "TEAL"}, {"220N", "ILLINI EVENING"}, {"220S", "ILLINI EVENING"}
-, {"13N", "SILVER"}, {"13S", "SILVER"}};
+    /** Array of strings containing all supported bus route:key pairs on weekdays. */
+    // Supports 22, 220
+    private static final String[][] routeIdsWeekday = {
+            {"22N", "ILLINI", "ILLINIEVENING", "ILLIEVENING"}, {"22S", "ILLINI", "ILLINIEVENING"}
+            , {"220N", "ILLINI", "ILLINIEVENING", "ILLINIEVENING"}, {"220S", "ILLINI", "ILLINIEVENING"}
+            , {"12WTEAL", "TEAL"}, {"12ETEAL", "TEAL"}
+            , {"13N", "SILVER"}, {"13S", "SILVER"}};
+
+    /** Array of strings containing all supported bus route:key pairs on Saturday. */
+    // Supports 220? north is having problems
+    private static final String[][] routeIdsSaturday = {
+            {"220N", "ILLINILIMITEDSATURDAY", "ILLINIEVENINGSATURDAY", "ILLINILIMITEDEVENINGSATURDAY"}
+            , {"120W" , "TEALSATURDAY", "TEALLATENIGHTSATURDAY"}, {"120E", "TEALSATURDAY", "TEALLATENIGHTSATURDAY"}};
+
+    /** Array of strings containing all supported bus route:key pairs on Sunday. */
+    // Supports 220
+    private static final String[][] routeIdsSunday = {
+            {"220N", "ILLINILIMITEDSUNDAY", "ILLINIEVENINGSUNDAY", "ILLINIEVENINGSUNDAY"}, {"220S", "ILLINILIMITEDSUNDAY", "ILLINIEVENINGSUNDAY"}
+            ,{"120W", "TEAL SUNDAY", "TEAL LATE NIGHT SUNDAY", "TEAL LATE NIGHT SUNDAY"}, {"120E", "TEALSUNDAY", "TEALLATENIGHTSUNDAY", "TEALLATENIGHTSUNDAY"}};
 
     /** Array of strings containing all supported bus stops. */
-    //par is not working properly
     private static final String[][] stopIds = {{"ISRN", "ISR:2"}, {"ISRS", "ISR:1"}, {"KRANNERTCENTER", "KRANNERT"}
     , {"CHEMICALANDLIFESCIENCES", "CHEMLS"}, {"LARN", "LAR:2"}, {"LARS", "LAR:1"}
-    , {"PAR", "PAPAR:2"}, {"GREGORYANDDORNERN", "GRGDNR:2"}, {"GREGORYANDDORNERS", "GRGDNR:3"}};
+    , {"PAR", "PAPAR:2"}, {"GREGORYANDDORNERN", "GRGDNR:2"}, {"GREGORYANDDORNERS", "GRGDNR:3"}
+    , {"GOODWINANDNEVADA", "GWNNV:2"}};
 
-    /** Array of upcoming bus arival times. */
-    private String[] stopTimes = new String[20];
-    private String[] endTimes = new String[20];
+    /** Array of bus arrival times at start stop. */
+    private String[] startStopTimes = new String[100];
 
-    /** Array of strings consisting of upcoming times that input bus and stop have returned. */
-    /** what the API returns */
-    private static String responseAPI = "";
+    /** Array of bus arrival times at end stop. */
+    private String[] endStopTimes = new String[100];
+
+    private String[] startStopVehicleIds = new String[100];
+
+    private String[] endStopVehicleIds = new String[100];
+
     /**
      * Run when this activity comes to the foreground.
      *
@@ -62,50 +84,86 @@ public final class BusList extends AppCompatActivity {
      */
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        System.out.println("on create is called");
         super.onCreate(savedInstanceState);
-        System.out.println(routeIds[0]);
         // Set up the queue for our API requests
         requestQueue = Volley.newRequestQueue(this);
+
+        // Sets view to bus list layout
         setContentView(R.layout.bus_list);
         String name = getIntent().getStringExtra("name");
-        String time = getIntent().getStringExtra("time");
-        String location = getIntent().getStringExtra("location");
-        String bus = getIntent().getStringExtra("bus");
-        String stop = getIntent().getStringExtra("stop");
-        //Storage variables for correct ids
+        String day = getIntent().getStringExtra("day");
+        String route = getIntent().getStringExtra("route");
+        String startStop = getIntent().getStringExtra("startStop");
+        String endStop = getIntent().getStringExtra("endStop");
+
+        // Declaring storage variables for correct ids
         String routeId = "";
-        String stopId = "";
-        String endId = "";
-        //Determines the correct bus route id from the user input
-        for (int i = 0; i < routeIds.length; i++) {
-            if (bus.replaceAll("\\s+", "").toUpperCase().equals(routeIds[i][0])) {
-                routeId = routeIds[i][1];
-            }
-        }
-        for (int i = 0; i < stopIds.length; i++) {
-            if (stop.replaceAll("\\s+", "").toUpperCase().equals(stopIds[i][0])) {
-                stopId = stopIds[i][1];
-            }
-            if (location.replaceAll("\\s+", "").toUpperCase().equals(stopIds[i][0])) {
-                endId = stopIds[i][1];
-            }
-        }
-        //Transfers user input to display personalized greeting
+        String routeIdEvening = "";
+        String routeIdLateNight = "";
+        String startStopId = "";
+        String endStopId = "";
+
+        // Transfers user input to display personalized greeting
         TextView textViewBus;
         textViewBus  = findViewById(R.id.textViewBus);
-        String displayGreeting = "Hi, " + name + ". " + bus + " will be arriving at " + stop + " at:";
+        String displayGreeting = "Hi, " + name + ". Departing from " + startStop + ", arriving at " + endStop + "\n" + "    Depart:                                Arrive:";
         textViewBus.setText(displayGreeting);
 
-        //starts api call
-        startAPICall(stopId, routeId, endId);
-
-        //transfers four upcoming times to their respective displays on the layout
-
-        for (int i = 0; i < stopTimes.length; i++) {
-            System.out.println(stopTimes[i]);
+        // Removes all spaces and moves to upper case in the inputs and then compares them with
+        for (int i = 0; i < stopIds.length; i++) {
+            if (startStop.replaceAll("\\s+", "").toUpperCase().equals(stopIds[i][0])) {
+                startStopId = stopIds[i][1];
+            }
+            if (endStop.replaceAll("\\s+", "").toUpperCase().equals(stopIds[i][0])) {
+                endStopId = stopIds[i][1];
+            }
         }
 
+        // Using the same manipulations, this determines if it is a weekday, Saturday, or Sunday and then
+        // finds the correct daytime, evening, and late night route ids from our predetermined set of input:key pairs
 
+        String dayCompare = day.replaceAll("\\s+", "").toUpperCase();
+        if (dayCompare.equals("WEEKDAY")) {
+            for (int i = 0; i < routeIdsWeekday.length; i++) {
+                if (route.replaceAll("\\s+", "").toUpperCase().equals(routeIdsWeekday[i][0])) {
+                    routeId = routeIdsWeekday[i][1];
+                    routeIdEvening = routeIdsWeekday[i][2];
+                    routeIdLateNight = routeIdsWeekday[i][3];
+                }
+            }
+        } else if (dayCompare.equals("SATURDAY")) {
+            for (int i = 0; i < routeIdsSaturday.length; i++) {
+                if (route.replaceAll("\\s+", "").toUpperCase().equals(routeIdsSaturday[i][0])) {
+                    routeId = routeIdsSaturday[i][1];
+                    routeIdEvening = routeIdsSaturday[i][2];
+                    routeIdLateNight = routeIdsSaturday[i][3];
+                }
+            }
+        } else if (dayCompare.equals("SUNDAY")) {
+            for (int i = 0; i < routeIdsSunday.length; i++) {
+                if (route.replaceAll("\\s+", "").toUpperCase().equals(routeIdsSunday[i][0])) {
+                    routeId = routeIdsSunday[i][1];
+                    routeIdEvening = routeIdsSunday[i][2];
+                    routeIdLateNight = routeIdsSunday[i][3];
+                }
+            }
+        }
+
+        // Starts api call
+
+        startAPICall(startStopId, endStopId, routeId, routeIdEvening, routeIdLateNight);
+        System.out.println("THIS READS AFTER THE FIRST CALL FINISHES" + startStopTimes[0]);
+
+        //AUTHOR TEST FOR WHAT TIMES ARE STORED
+        //for (int i = 0; i < startStopTimes.length; i++) {
+          //  System.out.println("These are the start stop times:");
+            //System.out.println(startStopTimes[i]);
+        //}
+        //for (int i = 0; i < endStopTimes.length; i++) {
+          //  System.out.println("These are the end stop times:");
+            //System.out.println(endStopTimes[i]);
+        //}
     }
     /**
      * Run when this activity is no longer visible.
@@ -118,119 +176,158 @@ public final class BusList extends AppCompatActivity {
     /**
      * Make a call to the IP geolocation API.
      *
-     * @param stopId id for the input stop.
-     * @param routeId is for the input route.
+     * @param startStopIdInput id for the starting stop.
+     * @param endStopIdInput id for the ending stop
+     * @param routeIdInput is for the input route.
+     * @param routeIdInputEvening evening route of input line.
+     * @param routeIdLateNight late night route of input line.
      */
-    void startAPICall(final String stopId, final String routeId, final String endId) {
+    void startAPICall(final String startStopIdInput, final String endStopIdInput, final String routeIdInput, final String routeIdInputEvening, final String routeIdLateNight) {
+        System.out.println("API IS CALLED");
         try {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                     Request.Method.GET,
-                    "https://developer.cumtd.com/api/v2.2/json/getdeparturesbystop?key=" + apiKey + "&stop_id=" + stopId + "&route_id=" + routeId,
+                    "https://developer.cumtd.com/api/v2.2/json/getdeparturesbystop?key=" + apiKey + "&stop_id=" + startStopIdInput + "&route_id=" + routeIdInput,
                     null,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(final JSONObject response) {
                             try {
                                 apiCallDone(response);
-                                responseAPI = response.getString("departures");
-                                //responseAPI.replaceAll("\"", "");
-                                String[] split = responseAPI.split("expected");
-                                System.out.println(responseAPI);
+
+                                // Since every response from the api call is formatted the same way, we are able to extract data through manipulation.
+                                // First, we ust getString with the key "departures" which returns a string of all info for every upcoming bus returned.
+                                // Next, we split that string every time "expected" appears because the expected arrival time is located after the first
+                                // instance of "expected" for every upcoming bus.
+
+                                String responseApi = response.getString("departures");
+                                System.out.println("first api departures is called");
+                                if (responseApi == null) {
+                                    System.out.println("first Is NULLLLLLLLL");
+                                }
+                                String[] split = responseApi.split("expected");
+                               // System.out.println(responseApi);
+
+                                // Since each upcoming bus has two instances of "expected" in the data returned, we skip every second instance and
+                                // grab the time from the correct indices of the string using substring, then add them to the startStopTimes array.
+                                // To maintain correct walking of startStopTimes, we used a class variable count that is initialized to zero.
+
+                                count = 0;
                                 for (int i = 1; i < split.length; i += 2) {
-                                    stopTimes[count] = split[i].substring(14, 19);
+                                    startStopTimes[count] = split[i].substring(14, 19);
                                     count++;
                                 }
-                                for (int i = 0; i < stopTimes.length; i++) {
-                                    System.out.println(stopTimes[i]);
+                                String[] splitId = responseApi.split("vehicle_id");
+                                for (int i = 1; i < splitId.length; i++) {
+                                    startStopVehicleIds[i - 1] = splitId[i].substring(3, 7);
                                 }
+
+
+                                // We grab the first two digits of each time in the array and test if they greater than 12, and if so subtracting 12
+                                // and reintroducing them back into a string in the array.
+                                // This maintains a 12 hour clock rather than a 24 hour clock.
+
                                 for (int i = 0; i < 4; i++) {
-                                    if (stopTimes[i] != null) {
-                                        int time = Integer.parseInt(stopTimes[i].substring(0, 2));
+                                    if (startStopTimes[i] != null) {
+                                        int time = Integer.parseInt(startStopTimes[i].substring(0, 2));
                                         if (time > 12) {
                                             time = time - 12;
                                         }
                                         if (time == 0) {
                                             time = 12;
                                         }
-                                        stopTimes[i] = Integer.toString(time) + stopTimes[i].substring(2, 5);
+                                        startStopTimes[i] = Integer.toString(time) + startStopTimes[i].substring(2, 5);
                                     }
                                 }
+
+                                // The process above repeats for the end stop.
 
                                 try {
                                     JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                                             Request.Method.GET,
-                                            "https://developer.cumtd.com/api/v2.2/json/getdeparturesbystop?key=" + apiKey + "&stop_id=" + endId + "&route_id=" + routeId,
+                                            "https://developer.cumtd.com/api/v2.2/json/getdeparturesbystop?key=" + apiKey + "&stop_id=" + endStopIdInput + "&route_id=" + routeIdInput,
                                             null,
                                             new Response.Listener<JSONObject>() {
                                                 @Override
                                                 public void onResponse(final JSONObject response) {
                                                     try {
                                                         apiCallDone(response);
-                                                        String newResponse = response.getString("departures");
-                                                        //responseAPI.replaceAll("\"", "");
-                                                        String[] splitTwo = newResponse.split("expected");
-                                                        System.out.println(newResponse);
+                                                        String newResponseApi = response.getString("departures");
+                                                        String[] splitTwo = newResponseApi.split("expected");
+                                                        //System.out.println(newResponseApi);
+                                                        String[] splitIdTwo = newResponseApi.split("vehicle_id");
+                                                        int idCount = 1;
+                                                        for (int i = 1; i < splitIdTwo.length; i++) {
+                                                            endStopVehicleIds[i - 1] = splitIdTwo[i].substring(3, 7);
+                                                            if (endStopVehicleIds[i - 1].equals(startStopVehicleIds[0])) {
+                                                                break;
+                                                            }
+                                                            idCount += 2;
+                                                        }
                                                         count = 0;
-                                                        for (int i = 1; i < splitTwo.length; i += 2) {
-                                                            endTimes[count] = splitTwo[i].substring(14, 19);
+                                                        for (int i = idCount; i < splitTwo.length; i += 2) {
+                                                            endStopTimes[count] = splitTwo[i].substring(14, 19);
                                                             count++;
                                                         }
-                                                        for (int i = 0; i < endTimes.length; i++) {
-                                                            System.out.println(endTimes[i]);
-                                                        }
+
+                                                        // Continues the same as previous try statement.
+
                                                         for (int i = 0; i < 4; i++) {
-                                                            if (endTimes[i] != null) {
-                                                                int time = Integer.parseInt(endTimes[i].substring(0, 2));
+                                                            if (endStopTimes[i] != null) {
+                                                                int time = Integer.parseInt(endStopTimes[i].substring(0, 2));
                                                                 if (time > 12) {
                                                                     time = time - 12;
                                                                 }
                                                                 if (time == 0) {
                                                                     time = 12;
                                                                 }
-                                                                endTimes[i] = Integer.toString(time) + endTimes[i].substring(2, 5);
+                                                                endStopTimes[i] = Integer.toString(time) + endStopTimes[i].substring(2, 5);
                                                             }
                                                         }
-                                                        if (stopTimes[0] == null && endTimes[0] == null) {
-                                                            stopTimes[0] = "Sorry, no buses available";
-                                                        }
-                                                        for (int i = 1; i < 4; i++) {
-                                                            if (stopTimes[i] == null) {
-                                                                stopTimes[i] = "";
+
+                                                        if (startStopTimes[0] == null && endStopTimes[0] == null) {
+                                                            startAPICallTwo(startStopIdInput, endStopIdInput, routeIdInputEvening, routeIdLateNight);
+                                                        } else {
+
+                                                            // Changes any null values to "" so that "null" is not displayed.
+
+                                                            for (int i = 0; i < 4; i++) {
+                                                                if (startStopTimes[i] == null) {
+                                                                    startStopTimes[i] = "";
+                                                                }
+                                                                if (endStopTimes[i] == null) {
+                                                                    endStopTimes[i] = "";
+                                                                }
                                                             }
-                                                            if (endTimes[i] == null) {
-                                                                endTimes[i] = "";
-                                                            }
+
+                                                            // Displays times in respective text windows.
+
+                                                            TextView textViewOne;
+                                                            textViewOne = findViewById(R.id.textViewOne);
+                                                            String displayTimeOne = startStopTimes[0] + "          " + endStopTimes[0];
+                                                            textViewOne.setText(displayTimeOne);
+
+                                                            TextView textViewTwo;
+                                                            textViewTwo = findViewById(R.id.textViewTwo);
+                                                            String displayTimeTwo = startStopTimes[1] + "          " + endStopTimes[1];
+                                                            textViewTwo.setText(displayTimeTwo);
+
+                                                            TextView textViewThree;
+                                                            textViewThree = findViewById(R.id.textViewThree);
+                                                            String displayTimeThree = startStopTimes[2] + "          " + endStopTimes[2];
+                                                            textViewThree.setText(displayTimeThree);
+
+                                                            TextView textViewFour;
+                                                            textViewFour = findViewById(R.id.textViewFour);
+                                                            String displayTimeFour = startStopTimes[3] + "          " + endStopTimes[3];
+                                                            textViewFour.setText(displayTimeFour);
                                                         }
-                                                        TextView textViewOne;
-                                                        textViewOne = findViewById(R.id.textViewOne);
-                                                        String displayTimeOne = stopTimes[0] + " " + endTimes[0];
-                                                        textViewOne.setText(displayTimeOne);
 
-                                                        TextView textViewTwo;
-                                                        textViewTwo = findViewById(R.id.textViewTwo);
-                                                        String displayTimeTwo = stopTimes[1] + " " + endTimes[1];
-                                                        textViewTwo.setText(displayTimeTwo);
-
-                                                        TextView textViewThree;
-                                                        textViewThree = findViewById(R.id.textViewThree);
-                                                        String displayTimeThree = stopTimes[2] + " " + endTimes[2];
-                                                        textViewThree.setText(displayTimeThree);
-
-                                                        TextView textViewFour;
-                                                        textViewFour = findViewById(R.id.textViewFour);
-                                                        String displayTimeFour = stopTimes[3] + " " + endTimes[3];
-                                                        textViewFour.setText(displayTimeFour);
-
-                                                        //for (int i = 0; i < split.length; i++) {
-                                                        //   System.out.println(split[i]);
-                                                        //}
                                                     } catch(JSONException e) {
                                                         e.printStackTrace();
                                                     }
-                                                    // JSONObject jsonObject = response;
-                                                    // JSONArray jsonArray = jsonObject.get("stop_times");
-                                                    //System.out.println(responseAPI);
                                                 }
+
                                             }, new Response.ErrorListener() {
                                         @Override
                                         public void onErrorResponse(final VolleyError error) {
@@ -239,20 +336,13 @@ public final class BusList extends AppCompatActivity {
                                     });
                                     jsonObjectRequest.setShouldCache(false);
                                     requestQueue.add(jsonObjectRequest);
-                                    responseAPI = jsonObjectRequest.toString();
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
 
-                                //for (int i = 0; i < split.length; i++) {
-                                 //   System.out.println(split[i]);
-                                //}
                             } catch(JSONException e) {
                                 e.printStackTrace();
                             }
-                           // JSONObject jsonObject = response;
-                           // JSONArray jsonArray = jsonObject.get("stop_times");
-                            //System.out.println(responseAPI);
                         }
                     }, new Response.ErrorListener() {
                 @Override
@@ -262,14 +352,357 @@ public final class BusList extends AppCompatActivity {
             });
             jsonObjectRequest.setShouldCache(false);
             requestQueue.add(jsonObjectRequest);
-            responseAPI = jsonObjectRequest.toString();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
+    /**
+     * Make a call to the IP geolocation API.
+     *
+     * @param startStopIdInput id for the starting stop.
+     * @param endStopIdInput id for the ending stop
+     * @param routeIdInputEvening evening route of input line.
+     * @param routeIdLateNight late night route of input line.
+     */
+    void startAPICallTwo(final String startStopIdInput, final String endStopIdInput, final String routeIdInputEvening, final String routeIdLateNight) {
+        System.out.println("API Two IS CALLED");
+        try {
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                    Request.Method.GET,
+                    "https://developer.cumtd.com/api/v2.2/json/getdeparturesbystop?key=" + apiKey + "&stop_id=" + startStopIdInput + "&route_id=" + routeIdInputEvening,
+                    null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(final JSONObject response) {
+                            try {
+                                apiCallDone(response);
+
+                                // Since every response from the api call is formatted the same way, we are able to extract data through manipulation.
+                                // First, we ust getString with the key "departures" which returns a string of all info for every upcoming bus returned.
+                                // Next, we split that string every time "expected" appears because the expected arrival time is located after the first
+                                // instance of "expected" for every upcoming bus.
+
+                                String responseApi = response.getString("departures");
+                                String[] split = responseApi.split("expected");
+                                // System.out.println(responseApi);
+
+                                // Since each upcoming bus has two instances of "expected" in the data returned, we skip every second instance and
+                                // grab the time from the correct indices of the string using substring, then add them to the startStopTimes array.
+                                // To maintain correct walking of startStopTimes, we used a class variable count that is initialized to zero.
+
+                                count = 0;
+                                for (int i = 1; i < split.length; i += 2) {
+                                    startStopTimes[count] = split[i].substring(14, 19);
+                                    count++;
+                                }
+                                String[] splitId = responseApi.split("vehicle_id");
+                                for (int i = 1; i < splitId.length; i++) {
+                                    startStopVehicleIds[i - 1] = splitId[i].substring(3, 7);
+                                }
+                                // We grab the first two digits of each time in the array and test if they greater than 12, and if so subtracting 12
+                                // and reintroducing them back into a string in the array.
+                                // This maintains a 12 hour clock rather than a 24 hour clock.
+
+                                for (int i = 0; i < 4; i++) {
+                                    if (startStopTimes[i] != null) {
+                                        int time = Integer.parseInt(startStopTimes[i].substring(0, 2));
+                                        if (time > 12) {
+                                            time = time - 12;
+                                        }
+                                        if (time == 0) {
+                                            time = 12;
+                                        }
+                                        startStopTimes[i] = Integer.toString(time) + startStopTimes[i].substring(2, 5);
+                                    }
+                                }
+
+                                // The process above repeats for the end stop.
+
+                                try {
+                                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                                            Request.Method.GET,
+                                            "https://developer.cumtd.com/api/v2.2/json/getdeparturesbystop?key=" + apiKey + "&stop_id=" + endStopIdInput + "&route_id=" + routeIdInputEvening,
+                                            null,
+                                            new Response.Listener<JSONObject>() {
+                                                @Override
+                                                public void onResponse(final JSONObject response) {
+                                                    try {
+                                                        apiCallDone(response);
+                                                        String newResponseApi = response.getString("departures");
+                                                        String[] splitTwo = newResponseApi.split("expected");
+                                                        //System.out.println(newResponseApi);
+                                                        String[] splitIdTwo = newResponseApi.split("vehicle_id");
+                                                        int idCount = 1;
+                                                        for (int i = 1; i < splitIdTwo.length; i++) {
+                                                            endStopVehicleIds[i - 1] = splitIdTwo[i].substring(3, 7);
+                                                            if (endStopVehicleIds[i - 1].equals(startStopVehicleIds[0])) {
+                                                                break;
+                                                            }
+                                                            idCount += 2;
+                                                        }
+                                                        count = 0;
+                                                        for (int i = idCount; i < splitTwo.length; i += 2) {
+                                                            endStopTimes[count] = splitTwo[i].substring(14, 19);
+                                                            count++;
+                                                        }
+
+
+                                                        // Continues the same as previous try statement.
+
+                                                        for (int i = 0; i < 4; i++) {
+                                                            if (endStopTimes[i] != null) {
+                                                                int time = Integer.parseInt(endStopTimes[i].substring(0, 2));
+                                                                if (time > 12) {
+                                                                    time = time - 12;
+                                                                }
+                                                                if (time == 0) {
+                                                                    time = 12;
+                                                                }
+                                                                endStopTimes[i] = Integer.toString(time) + endStopTimes[i].substring(2, 5);
+                                                            }
+                                                        }
+
+                                                        if (startStopTimes[0] == null && endStopTimes[0] == null) {
+                                                            startAPICallThree(startStopIdInput, endStopIdInput, routeIdLateNight);
+                                                        } else {
+
+                                                            // Changes any null values to "" so that "null" is not displayed.
+
+                                                            for (int i = 0; i < 4; i++) {
+                                                                if (startStopTimes[i] == null) {
+                                                                    startStopTimes[i] = "";
+                                                                }
+                                                                if (endStopTimes[i] == null) {
+                                                                    endStopTimes[i] = "";
+                                                                }
+                                                            }
+
+                                                            // Displays times in respective text windows.
+
+                                                            TextView textViewOne;
+                                                            textViewOne = findViewById(R.id.textViewOne);
+                                                            String displayTimeOne = startStopTimes[0] + " " + endStopTimes[0];
+                                                            textViewOne.setText(displayTimeOne);
+
+                                                            TextView textViewTwo;
+                                                            textViewTwo = findViewById(R.id.textViewTwo);
+                                                            String displayTimeTwo = startStopTimes[1] + " " + endStopTimes[1];
+                                                            textViewTwo.setText(displayTimeTwo);
+
+                                                            TextView textViewThree;
+                                                            textViewThree = findViewById(R.id.textViewThree);
+                                                            String displayTimeThree = startStopTimes[2] + " " + endStopTimes[2];
+                                                            textViewThree.setText(displayTimeThree);
+
+                                                            TextView textViewFour;
+                                                            textViewFour = findViewById(R.id.textViewFour);
+                                                            String displayTimeFour = startStopTimes[3] + " " + endStopTimes[3];
+                                                            textViewFour.setText(displayTimeFour);
+                                                        }
+
+                                                    } catch(JSONException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+
+                                            }, new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(final VolleyError error) {
+                                            Log.e(TAG, error.toString());
+                                        }
+                                    });
+                                    jsonObjectRequest.setShouldCache(false);
+                                    requestQueue.add(jsonObjectRequest);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            } catch(JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(final VolleyError error) {
+                    Log.e(TAG, error.toString());
+                }
+            });
+            jsonObjectRequest.setShouldCache(false);
+            requestQueue.add(jsonObjectRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void startAPICallThree(final String startStopIdInput, final String endStopIdInput, final String routeIdLateNight) {
+        System.out.println("API Three IS CALLED");
+        try {
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                    Request.Method.GET,
+                    "https://developer.cumtd.com/api/v2.2/json/getdeparturesbystop?key=" + apiKey + "&stop_id=" + startStopIdInput + "&route_id=" + routeIdLateNight,
+                    null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(final JSONObject response) {
+                            try {
+                                apiCallDone(response);
+
+                                // Since every response from the api call is formatted the same way, we are able to extract data through manipulation.
+                                // First, we ust getString with the key "departures" which returns a string of all info for every upcoming bus returned.
+                                // Next, we split that string every time "expected" appears because the expected arrival time is located after the first
+                                // instance of "expected" for every upcoming bus.
+
+                                String responseApi = response.getString("departures");
+                                String[] split = responseApi.split("expected");
+                                // System.out.println(responseApi);
+
+                                // Since each upcoming bus has two instances of "expected" in the data returned, we skip every second instance and
+                                // grab the time from the correct indices of the string using substring, then add them to the startStopTimes array.
+                                // To maintain correct walking of startStopTimes, we used a class variable count that is initialized to zero.
+
+                                count = 0;
+                                for (int i = 1; i < split.length; i += 2) {
+                                    startStopTimes[count] = split[i].substring(14, 19);
+                                    count++;
+                                }
+                                String[] splitId = responseApi.split("vehicle_id");
+                                for (int i = 1; i < splitId.length; i++) {
+                                    startStopVehicleIds[i - 1] = splitId[i].substring(3, 7);
+                                }
+                                // We grab the first two digits of each time in the array and test if they greater than 12, and if so subtracting 12
+                                // and reintroducing them back into a string in the array.
+                                // This maintains a 12 hour clock rather than a 24 hour clock.
+
+                                for (int i = 0; i < 4; i++) {
+                                    if (startStopTimes[i] != null) {
+                                        int time = Integer.parseInt(startStopTimes[i].substring(0, 2));
+                                        if (time > 12) {
+                                            time = time - 12;
+                                        }
+                                        if (time == 0) {
+                                            time = 12;
+                                        }
+                                        startStopTimes[i] = Integer.toString(time) + startStopTimes[i].substring(2, 5);
+                                    }
+                                }
+
+                                // The process above repeats for the end stop.
+
+                                try {
+                                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                                            Request.Method.GET,
+                                            "https://developer.cumtd.com/api/v2.2/json/getdeparturesbystop?key=" + apiKey + "&stop_id=" + endStopIdInput + "&route_id=" + routeIdLateNight,
+                                            null,
+                                            new Response.Listener<JSONObject>() {
+                                                @Override
+                                                public void onResponse(final JSONObject response) {
+                                                    try {
+                                                        apiCallDone(response);
+                                                        String newResponseApi = response.getString("departures");
+                                                        String[] splitTwo = newResponseApi.split("expected");
+                                                        //System.out.println(newResponseApi);
+                                                        String[] splitIdTwo = newResponseApi.split("vehicle_id");
+                                                        int idCount = 1;
+                                                        for (int i = 1; i < splitIdTwo.length; i++) {
+                                                            endStopVehicleIds[i - 1] = splitIdTwo[i].substring(3, 7);
+                                                            if (endStopVehicleIds[i - 1].equals(startStopVehicleIds[0])) {
+                                                                break;
+                                                            }
+                                                            idCount += 2;
+                                                        }
+                                                        count = 0;
+                                                        for (int i = idCount; i < splitTwo.length; i += 2) {
+                                                            endStopTimes[count] = splitTwo[i].substring(14, 19);
+                                                            count++;
+                                                        }
+
+                                                        // Continues the same as previous try statement.
+
+                                                        for (int i = 0; i < 4; i++) {
+                                                            if (endStopTimes[i] != null) {
+                                                                int time = Integer.parseInt(endStopTimes[i].substring(0, 2));
+                                                                if (time > 12) {
+                                                                    time = time - 12;
+                                                                }
+                                                                if (time == 0) {
+                                                                    time = 12;
+                                                                }
+                                                                endStopTimes[i] = Integer.toString(time) + endStopTimes[i].substring(2, 5);
+                                                            }
+                                                        }
+
+                                                        if (startStopTimes[0] == null && endStopTimes[0] == null) {
+                                                            startStopTimes[0] = "No busses :(";
+                                                            endStopTimes[0] = "";
+                                                        }
+
+                                                        // Changes any null values to "" so that "null" is not displayed.
+
+                                                        for (int i = 0; i < 4; i++) {
+                                                            if (startStopTimes[i] == null) {
+                                                                startStopTimes[i] = "";
+                                                            }
+                                                            if (endStopTimes[i] == null) {
+                                                                endStopTimes[i] = "";
+                                                            }
+                                                        }
+
+                                                        // Displays times in respective text windows.
+
+                                                        TextView textViewOne;
+                                                        textViewOne = findViewById(R.id.textViewOne);
+                                                        String displayTimeOne = startStopTimes[0] + " " + endStopTimes[0];
+                                                        textViewOne.setText(displayTimeOne);
+
+                                                        TextView textViewTwo;
+                                                        textViewTwo = findViewById(R.id.textViewTwo);
+                                                        String displayTimeTwo = startStopTimes[1] + " " + endStopTimes[1];
+                                                        textViewTwo.setText(displayTimeTwo);
+
+                                                        TextView textViewThree;
+                                                        textViewThree = findViewById(R.id.textViewThree);
+                                                        String displayTimeThree = startStopTimes[2] + " " + endStopTimes[2];
+                                                        textViewThree.setText(displayTimeThree);
+
+                                                        TextView textViewFour;
+                                                        textViewFour = findViewById(R.id.textViewFour);
+                                                        String displayTimeFour = startStopTimes[3] + " " + endStopTimes[3];
+                                                        textViewFour.setText(displayTimeFour);
+
+                                                    } catch(JSONException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+
+                                            }, new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(final VolleyError error) {
+                                            Log.e(TAG, error.toString());
+                                        }
+                                    });
+                                    jsonObjectRequest.setShouldCache(false);
+                                    requestQueue.add(jsonObjectRequest);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            } catch(JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(final VolleyError error) {
+                    Log.e(TAG, error.toString());
+                }
+            });
+            jsonObjectRequest.setShouldCache(false);
+            requestQueue.add(jsonObjectRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * Handle the response from our IP geolocation API.
      *

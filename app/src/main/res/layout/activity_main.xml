@@ -19,25 +19,16 @@
         android:text="" />
 
     <EditText
-        android:id="@+id/time_input"
+        android:id="@+id/day_input"
         android:layout_width="match_parent"
         android:layout_height="72dp"
         android:ems="10"
-        android:hint="@string/add_time"
-        android:inputType="time"
+        android:hint="@string/add_day"
+        android:inputType="text"
         android:text="" />
 
     <EditText
-        android:id="@+id/loc_input"
-        android:layout_width="match_parent"
-        android:layout_height="68dp"
-        android:ems="10"
-        android:hint="@string/add_class"
-        android:inputType="textPostalAddress"
-        android:text="" />
-
-    <EditText
-        android:id="@+id/bus_input"
+        android:id="@+id/route_input"
         android:layout_width="match_parent"
         android:layout_height="72dp"
         android:ems="10"
@@ -46,11 +37,20 @@
         android:text="" />
 
     <EditText
-        android:id="@+id/stop_input"
+        android:id="@+id/startStop_input"
         android:layout_width="match_parent"
         android:layout_height="68dp"
         android:ems="10"
-        android:hint="@string/add_stop"
+        android:hint="@string/add_startStop"
+        android:inputType="textPostalAddress"
+        android:text="" />
+
+    <EditText
+        android:id="@+id/endStop_input"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:ems="10"
+        android:hint="@string/add_endStop"
         android:inputType="textPostalAddress"
         android:text="" />
 

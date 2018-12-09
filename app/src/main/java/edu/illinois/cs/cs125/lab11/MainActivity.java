@@ -26,14 +26,12 @@ import android.widget.TextView;
 public final class MainActivity extends AppCompatActivity {
     /** Default logging tag for messages from the main activity. */
     private static final String TAG = "Lab11:Main";
-    private String timeOfClass;
-    private String locationOfClass;
-    private String busNumber;
+
     public String name;
-    public String time;
-    public String location;
-    public String bus;
-    public String stop;
+    public String day;
+    public String route;
+    public String startStop;
+    public String endStop;
 
     /** Request queue for our API requests. */
     private static RequestQueue requestQueue;
@@ -56,22 +54,31 @@ public final class MainActivity extends AppCompatActivity {
        // https://developer.cumtd.com/api/v2.2/json/getstoptimesbystop?key=a007306f70264930870da537901333e3&stop_id=it:1
     }
     public void switchScreens(View v){
-        EditText timeId = findViewById(R.id.time_input);
-        EditText locId = findViewById(R.id.loc_input);
-        EditText busId = findViewById(R.id.bus_input);
-        EditText stopId = findViewById(R.id.stop_input);
-        EditText nameId = findViewById(R.id.name_input);
-        name = nameId.getText().toString();
-        time = timeId.getText().toString();
-        location = locId.getText().toString();
-        bus = busId.getText().toString();
-        stop = stopId.getText().toString();
+        System.out.println("the button click works");
+        //Storing inputs as EditText variables to allow use of getText()
+        EditText nameInput = findViewById(R.id.name_input);
+        EditText dayInput = findViewById(R.id.day_input);
+        EditText routeInput = findViewById(R.id.route_input);
+        EditText startStopInput = findViewById(R.id.startStop_input);
+        EditText endStopInput = findViewById(R.id.endStop_input);
+
+        //Storing inputs from above as strings in class variables
+        name = nameInput.getText().toString();
+        day = dayInput.getText().toString();
+        route = routeInput.getText().toString();
+        startStop = startStopInput.getText().toString();
+        endStop = endStopInput.getText().toString();
+
+        //Passing user inputs to the BusList class
         Intent intent = new Intent(MainActivity.this, BusList.class);
-        intent.putExtra("time", time);
-        intent.putExtra("location", location);
-        intent.putExtra("bus", bus);
-        intent.putExtra("stop", stop);
         intent.putExtra("name", name);
+        intent.putExtra("day", day);
+        intent.putExtra("route", route);
+        intent.putExtra("startStop", startStop);
+        intent.putExtra("endStop", endStop);
+
+        //Starts BusList activity
+        System.out.println("bout to start activity");
         startActivity(intent);
     }
     /**
@@ -81,7 +88,6 @@ public final class MainActivity extends AppCompatActivity {
         startAPICall("192.17.96.8");
         System.out.println(requestQueue);
     }
-
     /**
      * Run when this activity is no longer visible.
      */
