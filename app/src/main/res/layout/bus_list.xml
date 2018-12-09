@@ -11,7 +11,7 @@
     <TextView
         android:id="@+id/textViewBus"
         android:layout_width="match_parent"
-        android:layout_height="95dp"
+        android:layout_height="119dp"
         android:gravity="center_vertical"
         android:text=""
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
@@ -90,5 +90,13 @@
         android:layout_height="8dp"
         android:background="@android:color/black"
         android:text="TextView" />
+
+    <Button
+        android:id="@+id/get_info"
+        style="@android:style/Widget.Holo.Button.Toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="refreshPage"
+        android:text="Refresh Page" />
 
 </LinearLayout>

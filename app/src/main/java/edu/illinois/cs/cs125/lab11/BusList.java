@@ -36,8 +36,6 @@ public final class BusList extends AppCompatActivity {
     /** General count variable. */
     public int count = 0;
 
-    /** Specific count variable to count how many times the start api function is called. */
-    public int countApi = 0;
     /** Api Key value holder. */
     private static final String apiKey = "a007306f70264930870da537901333e3";
 
@@ -50,15 +48,15 @@ public final class BusList extends AppCompatActivity {
             , {"13N", "SILVER"}, {"13S", "SILVER"}};
 
     /** Array of strings containing all supported bus route:key pairs on Saturday. */
-    // Supports 220? north is having problems
+    // Supports 220
     private static final String[][] routeIdsSaturday = {
-            {"220N", "ILLINILIMITEDSATURDAY", "ILLINIEVENINGSATURDAY", "ILLINILIMITEDEVENINGSATURDAY"}
-            , {"120W" , "TEALSATURDAY", "TEALLATENIGHTSATURDAY"}, {"120E", "TEALSATURDAY", "TEALLATENIGHTSATURDAY"}};
+            {"220N", "ILLINI LIMITED SATURDAY", "ILLINI EVENING SATURDAY", "ILLINI LIMITED EVENING SATURDAY"}
+            , {"120W" , "TEAL SATURDAY", "TEAL LATE NIGHT SATURDAY"}, {"120E", "TEAL SATURDAY", "TEAL LATE NIGHT SATURDAY"}};
 
     /** Array of strings containing all supported bus route:key pairs on Sunday. */
-    // Supports 220
+    // Supports 220, 120
     private static final String[][] routeIdsSunday = {
-            {"220N", "ILLINILIMITEDSUNDAY", "ILLINIEVENINGSUNDAY", "ILLINIEVENINGSUNDAY"}, {"220S", "ILLINILIMITEDSUNDAY", "ILLINIEVENINGSUNDAY"}
+            {"220N", "ILLINI LIMITED SUNDAY", "ILLINI EVENING SUNDAY", "ILLINI EVENING SUNDAY"}, {"220S", "ILLINI LIMITED SUNDAY", "ILLINI EVENING SUNDAY"}
             ,{"120W", "TEAL SUNDAY", "TEAL LATE NIGHT SUNDAY", "TEAL LATE NIGHT SUNDAY"}, {"120E", "TEALSUNDAY", "TEALLATENIGHTSUNDAY", "TEALLATENIGHTSUNDAY"}};
 
     /** Array of strings containing all supported bus stops. */
@@ -77,6 +75,8 @@ public final class BusList extends AppCompatActivity {
 
     private String[] endStopVehicleIds = new String[100];
 
+    Bundle savedPage;
+
     /**
      * Run when this activity comes to the foreground.
      *
@@ -84,6 +84,7 @@ public final class BusList extends AppCompatActivity {
      */
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        savedPage = savedInstanceState;
         System.out.println("on create is called");
         super.onCreate(savedInstanceState);
         // Set up the queue for our API requests
@@ -107,7 +108,7 @@ public final class BusList extends AppCompatActivity {
         // Transfers user input to display personalized greeting
         TextView textViewBus;
         textViewBus  = findViewById(R.id.textViewBus);
-        String displayGreeting = "Hi, " + name + ". Departing from " + startStop + ", arriving at " + endStop + "\n" + "    Depart:                                Arrive:";
+        String displayGreeting = "Hi, " + name + ". " + route + " departing from " + startStop + ", arriving at " + endStop + "." + "\n" + "    Depart:                                Arrive:";
         textViewBus.setText(displayGreeting);
 
         // Removes all spaces and moves to upper case in the inputs and then compares them with
@@ -217,6 +218,9 @@ public final class BusList extends AppCompatActivity {
                                     startStopTimes[count] = split[i].substring(14, 19);
                                     count++;
                                 }
+
+                                // Gets all of the vehicle ids for the buses arriving at the start stop
+
                                 String[] splitId = responseApi.split("vehicle_id");
                                 for (int i = 1; i < splitId.length; i++) {
                                     startStopVehicleIds[i - 1] = splitId[i].substring(3, 7);
@@ -256,6 +260,11 @@ public final class BusList extends AppCompatActivity {
                                                         String[] splitTwo = newResponseApi.split("expected");
                                                         //System.out.println(newResponseApi);
                                                         String[] splitIdTwo = newResponseApi.split("vehicle_id");
+
+                                                        // Gets vehicle ids for all buses arriving at end stop.
+                                                        // idCount maintains the correct index to start at when pulling arrival times for the
+                                                        // end stop by comparing vehicle ids from the start stop with ids from the end stop
+
                                                         int idCount = 1;
                                                         for (int i = 1; i < splitIdTwo.length; i++) {
                                                             endStopVehicleIds[i - 1] = splitIdTwo[i].substring(3, 7);
@@ -264,6 +273,9 @@ public final class BusList extends AppCompatActivity {
                                                             }
                                                             idCount += 2;
                                                         }
+
+                                                        // Pulls arrival times at end stop for up to the first four buses that will be arriving at start stop
+
                                                         count = 0;
                                                         for (int i = idCount; i < splitTwo.length; i += 2) {
                                                             endStopTimes[count] = splitTwo[i].substring(14, 19);
@@ -702,6 +714,10 @@ public final class BusList extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public void refreshPage(View v) {
+        finish();
+        startActivity(getIntent());
     }
     /**
      * Handle the response from our IP geolocation API.
