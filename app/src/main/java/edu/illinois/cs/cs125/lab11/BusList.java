@@ -13,10 +13,7 @@ import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONArray;
-//import org.json.simple.parser.*;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -40,27 +37,28 @@ public final class BusList extends AppCompatActivity {
     private static final String apiKey = "a007306f70264930870da537901333e3";
 
     /** Array of strings containing all supported bus route:key pairs on weekdays. */
-    // Supports 22, 220
+    // Supports 220
     private static final String[][] routeIdsWeekday = {
-            {"22N", "ILLINI", "ILLINIEVENING", "ILLIEVENING"}, {"22S", "ILLINI", "ILLINIEVENING"}
-            , {"220N", "ILLINI", "ILLINIEVENING", "ILLINIEVENING"}, {"220S", "ILLINI", "ILLINIEVENING"}
-            , {"12WTEAL", "TEAL"}, {"12ETEAL", "TEAL"}
+            {"22", "ILLINI", "ILLINI LIMITED", "ILLINI LIMITED"}
+            , {"220", "ILLINI", "ILLINI EVENING", "ILLINI EVENING"}
+            , {"12", "TEAL"}
             , {"13N", "SILVER"}, {"13S", "SILVER"}};
 
     /** Array of strings containing all supported bus route:key pairs on Saturday. */
     // Supports 220
     private static final String[][] routeIdsSaturday = {
-            {"220N", "ILLINI LIMITED SATURDAY", "ILLINI EVENING SATURDAY", "ILLINI LIMITED EVENING SATURDAY"}
+            {"220", "ILLINI LIMITED SATURDAY", "ILLINI EVENING SATURDAY", "ILLINI LIMITED EVENING SATURDAY"}
             , {"120W" , "TEAL SATURDAY", "TEAL LATE NIGHT SATURDAY"}, {"120E", "TEAL SATURDAY", "TEAL LATE NIGHT SATURDAY"}};
 
     /** Array of strings containing all supported bus route:key pairs on Sunday. */
     // Supports 220, 120
     private static final String[][] routeIdsSunday = {
-            {"220N", "ILLINI LIMITED SUNDAY", "ILLINI EVENING SUNDAY", "ILLINI EVENING SUNDAY"}, {"220S", "ILLINI LIMITED SUNDAY", "ILLINI EVENING SUNDAY"}
-            ,{"120W", "TEAL SUNDAY", "TEAL LATE NIGHT SUNDAY", "TEAL LATE NIGHT SUNDAY"}, {"120E", "TEALSUNDAY", "TEALLATENIGHTSUNDAY", "TEALLATENIGHTSUNDAY"}};
+            {"220", "ILLINI LIMITED SUNDAY", "ILLINI EVENING SUNDAY", "ILLINI EVENING SUNDAY"}
+            ,{"120", "TEAL SUNDAY", "TEAL LATE NIGHT SUNDAY", "TEAL LATE NIGHT SUNDAY"}};
 
     /** Array of strings containing all supported bus stops. */
-    private static final String[][] stopIds = {{"ISRN", "ISR:2"}, {"ISRS", "ISR:1"}, {"KRANNERTCENTER", "KRANNERT"}
+    // Supports ISR, Krannert, Lar
+    private static final String[][] stopIds = {{"ISRW", "ISR:2"}, {"ISRE", "ISR:1"}, {"KRANNERTCENTERN", "KRANNERT"}
     , {"CHEMICALANDLIFESCIENCES", "CHEMLS"}, {"LARN", "LAR:2"}, {"LARS", "LAR:1"}
     , {"PAR", "PAPAR:2"}, {"GREGORYANDDORNERN", "GRGDNR:2"}, {"GREGORYANDDORNERS", "GRGDNR:3"}
     , {"GOODWINANDNEVADA", "GWNNV:2"}};
@@ -85,13 +83,13 @@ public final class BusList extends AppCompatActivity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         savedPage = savedInstanceState;
-        System.out.println("on create is called");
         super.onCreate(savedInstanceState);
         // Set up the queue for our API requests
         requestQueue = Volley.newRequestQueue(this);
 
         // Sets view to bus list layout
         setContentView(R.layout.bus_list);
+
         String name = getIntent().getStringExtra("name");
         String day = getIntent().getStringExtra("day");
         String route = getIntent().getStringExtra("route");
@@ -154,17 +152,6 @@ public final class BusList extends AppCompatActivity {
         // Starts api call
 
         startAPICall(startStopId, endStopId, routeId, routeIdEvening, routeIdLateNight);
-        System.out.println("THIS READS AFTER THE FIRST CALL FINISHES" + startStopTimes[0]);
-
-        //AUTHOR TEST FOR WHAT TIMES ARE STORED
-        //for (int i = 0; i < startStopTimes.length; i++) {
-          //  System.out.println("These are the start stop times:");
-            //System.out.println(startStopTimes[i]);
-        //}
-        //for (int i = 0; i < endStopTimes.length; i++) {
-          //  System.out.println("These are the end stop times:");
-            //System.out.println(endStopTimes[i]);
-        //}
     }
     /**
      * Run when this activity is no longer visible.
@@ -316,22 +303,22 @@ public final class BusList extends AppCompatActivity {
 
                                                             TextView textViewOne;
                                                             textViewOne = findViewById(R.id.textViewOne);
-                                                            String displayTimeOne = startStopTimes[0] + "          " + endStopTimes[0];
+                                                            String displayTimeOne = startStopTimes[0] + "     " + endStopTimes[0];
                                                             textViewOne.setText(displayTimeOne);
 
                                                             TextView textViewTwo;
                                                             textViewTwo = findViewById(R.id.textViewTwo);
-                                                            String displayTimeTwo = startStopTimes[1] + "          " + endStopTimes[1];
+                                                            String displayTimeTwo = startStopTimes[1] + "       " + endStopTimes[1];
                                                             textViewTwo.setText(displayTimeTwo);
 
                                                             TextView textViewThree;
                                                             textViewThree = findViewById(R.id.textViewThree);
-                                                            String displayTimeThree = startStopTimes[2] + "          " + endStopTimes[2];
+                                                            String displayTimeThree = startStopTimes[2] + "        " + endStopTimes[2];
                                                             textViewThree.setText(displayTimeThree);
 
                                                             TextView textViewFour;
                                                             textViewFour = findViewById(R.id.textViewFour);
-                                                            String displayTimeFour = startStopTimes[3] + "          " + endStopTimes[3];
+                                                            String displayTimeFour = startStopTimes[3] + "        " + endStopTimes[3];
                                                             textViewFour.setText(displayTimeFour);
                                                         }
 
@@ -494,22 +481,22 @@ public final class BusList extends AppCompatActivity {
 
                                                             TextView textViewOne;
                                                             textViewOne = findViewById(R.id.textViewOne);
-                                                            String displayTimeOne = startStopTimes[0] + " " + endStopTimes[0];
+                                                            String displayTimeOne = startStopTimes[0] + "    " + endStopTimes[0];
                                                             textViewOne.setText(displayTimeOne);
 
                                                             TextView textViewTwo;
                                                             textViewTwo = findViewById(R.id.textViewTwo);
-                                                            String displayTimeTwo = startStopTimes[1] + " " + endStopTimes[1];
+                                                            String displayTimeTwo = startStopTimes[1] + "          " + endStopTimes[1];
                                                             textViewTwo.setText(displayTimeTwo);
 
                                                             TextView textViewThree;
                                                             textViewThree = findViewById(R.id.textViewThree);
-                                                            String displayTimeThree = startStopTimes[2] + " " + endStopTimes[2];
+                                                            String displayTimeThree = startStopTimes[2] + "          " + endStopTimes[2];
                                                             textViewThree.setText(displayTimeThree);
 
                                                             TextView textViewFour;
                                                             textViewFour = findViewById(R.id.textViewFour);
-                                                            String displayTimeFour = startStopTimes[3] + " " + endStopTimes[3];
+                                                            String displayTimeFour = startStopTimes[3] + "          " + endStopTimes[3];
                                                             textViewFour.setText(displayTimeFour);
                                                         }
 
@@ -664,22 +651,22 @@ public final class BusList extends AppCompatActivity {
 
                                                         TextView textViewOne;
                                                         textViewOne = findViewById(R.id.textViewOne);
-                                                        String displayTimeOne = startStopTimes[0] + " " + endStopTimes[0];
+                                                        String displayTimeOne = startStopTimes[0] + "          " + endStopTimes[0];
                                                         textViewOne.setText(displayTimeOne);
 
                                                         TextView textViewTwo;
                                                         textViewTwo = findViewById(R.id.textViewTwo);
-                                                        String displayTimeTwo = startStopTimes[1] + " " + endStopTimes[1];
+                                                        String displayTimeTwo = startStopTimes[1] + "          " + endStopTimes[1];
                                                         textViewTwo.setText(displayTimeTwo);
 
                                                         TextView textViewThree;
                                                         textViewThree = findViewById(R.id.textViewThree);
-                                                        String displayTimeThree = startStopTimes[2] + " " + endStopTimes[2];
+                                                        String displayTimeThree = startStopTimes[2] + "          " + endStopTimes[2];
                                                         textViewThree.setText(displayTimeThree);
 
                                                         TextView textViewFour;
                                                         textViewFour = findViewById(R.id.textViewFour);
-                                                        String displayTimeFour = startStopTimes[3] + " " + endStopTimes[3];
+                                                        String displayTimeFour = startStopTimes[3] + "          " + endStopTimes[3];
                                                         textViewFour.setText(displayTimeFour);
 
                                                     } catch(JSONException e) {

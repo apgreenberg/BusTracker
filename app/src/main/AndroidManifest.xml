@@ -18,5 +18,6 @@
             </intent-filter>
         </activity>
         <activity android:name="BusList"></activity>
+        <activity android:name="Help"></activity>
     </application>
 </manifest>
