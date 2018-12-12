@@ -3,20 +3,16 @@ package edu.illinois.cs.cs125.lab11;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 
 /**
@@ -42,48 +38,51 @@ public final class BusList extends AppCompatActivity {
     /** Idinput */
     public String routeId = "";
 
-    /** Api Key value holder. */
-    private static final String apiKey = "a007306f70264930870da537901333e3";
-
-    /** Array of strings containing all supported bus route:key pairs on weekdays. */
-    // Supports 220
-    private static final String[][] routeIdsWeekday = {
-            {"22", "ILLINI", "ILLINI LIMITED", "ILLINI LIMITED"}
-            , {"220", "ILLINI", "ILLINI EVENING", "ILLINI EVENING"}
-            , {"12", "TEAL"}
-            , {"13N", "SILVER"}, {"13S", "SILVER"}};
-
-    /** Array of strings containing all supported bus route:key pairs on Saturday. */
-    // Supports 220
-    private static final String[][] routeIdsSaturday = {
-            {"220", "ILLINI LIMITED SATURDAY", "ILLINI EVENING SATURDAY", "ILLINI LIMITED EVENING SATURDAY"}
-            , {"120W" , "TEAL SATURDAY", "TEAL LATE NIGHT SATURDAY"}, {"120E", "TEAL SATURDAY", "TEAL LATE NIGHT SATURDAY"}};
-
-    /** Array of strings containing all supported bus route:key pairs on Sunday. */
-    // Supports 220, 120
-    private static final String[][] routeIdsSunday = {
-            {"220", "ILLINI LIMITED SUNDAY", "ILLINI EVENING SUNDAY", "ILLINI EVENING SUNDAY"}
-            ,{"120", "TEAL SUNDAY", "TEAL LATE NIGHT SUNDAY", "TEAL LATE NIGHT SUNDAY"}};
-
-    /** Array of strings containing all supported bus stops. */
-    // Supports ISR, Krannert, Lar
-    private static final String[][] stopIds = {{"ISRW", "ISR:2"}, {"ISRE", "ISR:1"}, {"KRANNERTCENTERN", "KRANNERT"}
-    , {"CHEMICALANDLIFESCIENCES", "CHEMLS"}, {"LARN", "LAR:2"}, {"LARS", "LAR:1"}
-    , {"PARW", "PAR:2"}, {"GREGORYANDDORNERN", "GRGDNR:2"}, {"GREGORYANDDORNERS", "GRGDNR:3"}
-    , {"GOODWINANDNEVADA", "GWNNV:2"}, {"ILLINIUNIONE", "IU:1"}, {"ILLINIUNIONW", "IU:9"}, {"GREGORYATLIBRARYE, GRGLIB:1"}
-    , {"GREGORYATLIBRARYW, GRGLIB:2"}};
-
+    // Arrays to store arrival times and vehicle ids
     /** Array of bus arrival times at start stop. */
-    private String[] startStopTimes = new String[100];
+    private String[] startStopTimes = new String[10];
 
     /** Array of bus arrival times at end stop. */
-    private String[] endStopTimes = new String[100];
+    private String[] endStopTimes = new String[10];
 
     private String[] startStopVehicleIds = new String[100];
 
     private String[] endStopVehicleIds = new String[100];
 
-    Bundle savedPage;
+    /** Api Key value holder. */
+    private static final String apiKey = "a007306f70264930870da537901333e3";
+
+    /** Array of strings containing all supported bus route:key pairs on weekdays. */
+    // Supports 220, 22, 13, 130
+    private static final String[][] routeIdsWeekday = {
+            {"22", "ILLINI", "ILLINI LIMITED", "ILLINI LIMITED"}
+            , {"220", "ILLINI", "ILLINI EVENING", "ILLINI EVENING"}
+            , {"12", "TEAL", "TEAL EVENING", "TEAL LATE NIGHT"}
+            , {"120", "TEAL EVENING", "TEAL LATE NIGHT", "TEAL LATE NIGHT"}
+            , {"13", "SILVER", "SILVER EVENING", "SILVER LATE NIGHT"}
+            , {"130", "SILVER EVENING", "SILVER LATE NIGHT", "SILVER LATE NIGHT"}};
+
+    /** Array of strings containing all supported bus route:key pairs on Saturday. */
+    // Supports 220, 120, 130
+    private static final String[][] routeIdsSaturday = {
+            {"220", "ILLINI LIMITED SATURDAY", "ILLINI EVENING SATURDAY", "ILLINI LIMITED EVENING SATURDAY"}
+            , {"120" , "TEAL SATURDAY", "TEAL EVENING SATURDAY", "TEAL LATE NIGHT SATURDAY"}
+            , {"130", "SILVER SATURDAY", "SILVER EVENING SATURDAY", "SILVER LATE NIGHT"}};
+
+    /** Array of strings containing all supported bus route:key pairs on Sunday. */
+    // Supports 220, 120, 130
+    private static final String[][] routeIdsSunday = {
+            {"220", "ILLINI LIMITED SUNDAY", "ILLINI EVENING SUNDAY", "ILLINI EVENING SUNDAY"}
+            ,{"120", "TEAL SUNDAY", "TEAL LATE NIGHT SUNDAY", "TEAL LATE NIGHT SUNDAY"}
+            , {"130", "SILVER SUNDAY", "SILVER EVENING SUNDAY", "SILVER LATE NIGHT"}};
+
+    /** Array of strings containing all supported bus stops. */
+    private static final String[][] stopIds = {{"ISRW", "ISR:2"}, {"ISRE", "ISR:1"}, {"KRANNERTCENTERN", "KRANNERT:2"}
+    , {"CHEMICALANDLIFESCIENCES", "CHEMLS"}, {"LARN", "LAR:2"}, {"LARS", "LAR:1"}
+    , {"KRANNERTCENTERS", ""}, {"PARW", "PAR:2"}, {"GREGORYANDDORNERN", "GRGDNR:2"}, {"GREGORYANDDORNERS", "GRGDNR:3"}
+    , {"GOODWINANDNEVADAN", "GWNNV:1"}, {"ILLINIUNIONE", "IU:1"}, {"ILLINIUNIONW", "IU:9"}, {"GREGORYATLIBRARYE, GRGLIB:1"}
+    , {"GREGORYATLIBRARYW, GRGLIB:2"}};
+
 
     /**
      * Run when this activity comes to the foreground.
@@ -92,7 +91,6 @@ public final class BusList extends AppCompatActivity {
      */
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
-        savedPage = savedInstanceState;
         super.onCreate(savedInstanceState);
         // Set up the queue for our API requests
         requestQueue = Volley.newRequestQueue(this);
@@ -190,7 +188,6 @@ public final class BusList extends AppCompatActivity {
      * @param routeIdInput is for the input route.
      */
     void startAPICall(final String startStopIdInput, final String endStopIdInput, final String routeIdInput) {
-        System.out.println("API IS CALLED");
         try {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                     Request.Method.GET,
@@ -210,7 +207,6 @@ public final class BusList extends AppCompatActivity {
                                 String responseApi = response.getString("departures");
                                 System.out.println("first api departures is called");
                                 if (responseApi == null) {
-                                    System.out.println("first Is NULLLLLLLLL");
                                 }
                                 String[] split = responseApi.split("expected");
                                // System.out.println(responseApi);
@@ -338,12 +334,12 @@ public final class BusList extends AppCompatActivity {
 
                                                             TextView textViewThree;
                                                             textViewThree = findViewById(R.id.textViewThree);
-                                                            String displayTimeThree = startStopTimes[2] + "      " + endStopTimes[2];
+                                                            String displayTimeThree = startStopTimes[2] + "       " + endStopTimes[2];
                                                             textViewThree.setText(displayTimeThree);
 
                                                             TextView textViewFour;
                                                             textViewFour = findViewById(R.id.textViewFour);
-                                                            String displayTimeFour = startStopTimes[3] + "      " + endStopTimes[3];
+                                                            String displayTimeFour = startStopTimes[3] + "       " + endStopTimes[3];
                                                             textViewFour.setText(displayTimeFour);
                                                         }
 

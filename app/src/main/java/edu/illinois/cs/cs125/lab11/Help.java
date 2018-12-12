@@ -20,9 +20,9 @@ public class Help extends AppCompatActivity {
                 " Bus stops are identified by the names listed below paired with a directional abbreviation. The direction represents the orientation of the bus at a stop." +
                 " Eg. The 220 S is oriented eastward at the ISR stops, thus when searching for 220 S routes, ISR E should be your first input. \n\n" +
                 "Supported Stops: \n\n" +
-                "ISR E, ISR W, Krannert Center N, LAR N, LAR S \n\n" +
+                "ISR E, ISR W, Krannert Center N, LAR N, LAR S, Gregory at Library E, Gregory at Library W, Illini Union E, Illini Union W \n\n" +
                 "Supported Routes: \n\n" +
-                "22, 220";
+                "22, 220, 12, 120, 13, 130";
         textViewHelp.setText(displayHelpInfo);
     }
 }
