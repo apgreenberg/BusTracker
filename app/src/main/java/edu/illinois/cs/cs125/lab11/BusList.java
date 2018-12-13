@@ -1,5 +1,5 @@
 package edu.illinois.cs.cs125.lab11;
-
+import java.util.Calendar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -80,7 +80,7 @@ public final class BusList extends AppCompatActivity {
     private static final String[][] stopIds = {{"ISRW", "ISR:2"}, {"ISRE", "ISR:1"}, {"KRANNERTCENTERN", "KRANNERT:2"}
     , {"CHEMICALANDLIFESCIENCES", "CHEMLS"}, {"LARN", "LAR:2"}, {"LARS", "LAR:1"}
     , {"KRANNERTCENTERS", ""}, {"PARW", "PAR:2"}, {"GREGORYANDDORNERN", "GRGDNR:2"}, {"GREGORYANDDORNERS", "GRGDNR:3"}
-    , {"GOODWINANDNEVADAN", "GWNNV:1"}, {"ILLINIUNIONE", "IU:1"}, {"ILLINIUNIONW", "IU:9"}, {"GREGORYATLIBRARYE, GRGLIB:1"}
+    , {"GOODWINANDNEVADAN", "GWNNV:1"}, {"GOODWINANDNEVADAS", "GWNNV:4"}, {"ILLINIUNIONE", "IU:1"}, {"ILLINIUNIONW", "IU:9"}, {"GREGORYATLIBRARYE, GRGLIB:1"}
     , {"GREGORYATLIBRARYW, GRGLIB:2"}};
 
 
@@ -312,6 +312,9 @@ public final class BusList extends AppCompatActivity {
                                                             // Changes any null values to "" so that "null" is not displayed.
 
                                                             for (int i = 0; i < 4; i++) {
+                                                                if (endStopTimes[i] == null && startStopTimes[i] != null) {
+                                                                    startStopTimes[i] = null;
+                                                                }
                                                                 if (startStopTimes[i] == null) {
                                                                     startStopTimes[i] = "";
                                                                 }
